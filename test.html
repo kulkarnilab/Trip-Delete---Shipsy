@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>DeleteTrip Filter (Client-side)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f1115; --fg: #e8eaed; --muted: #a1a7b3; --accent: #3b82f6; --ok:#10b981; --warn:#f59e0b; --err:#ef4444;
+      --border: #2a2f3a; --chip:#1b1f2a;
+    }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg); color: var(--fg);
+      display: flex; align-items: stretch; justify-content: center;
+    }
+    .container { width: min(1100px, 100%); padding: 24px; }
+    h1 { margin: 0 0 12px; font-size: 20px; }
+    .sub { color: var(--muted); margin-bottom: 18px; font-size: 13px; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+    input[type="text"] {
+      flex: 1 1 520px; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: #111521; color: var(--fg);
+    }
+    .btn {
+      background: var(--accent); border: none; color: white; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 600;
+    }
+    .btn:disabled { opacity: .6; cursor: not-allowed; }
+    .btn.secondary { background: #374151; }
+    .chip { display:inline-flex; align-items:center; gap:8px; background:var(--chip); border:1px solid var(--border); padding:8px 10px; border-radius: 999px; color: var(--muted); }
+    .drop {
+      border: 2px dashed var(--border); border-radius: 12px; padding: 24px; text-align: center; margin: 10px 0 16px; background: #0b0e18;
+    }
+    .drop.dragover { border-color: var(--accent); background: #101426; }
+    .grid {
+      overflow:auto; border:1px solid var(--border); border-radius: 10px; background:#0b0f1a;
+    }
+    table { border-collapse: collapse; width: 100%; font-size: 13px; }
+    th, td { padding: 8px 10px; border-bottom: 1px solid #151a26; white-space: nowrap; }
+    th { position: sticky; top: 0; background:#0f1320; text-align: left; }
+    .status { margin: 8px 0 2px; font-size: 12px; color: var(--muted); }
+    .error { color: var(--err); }
+    .success { color: var(--ok); }
+    .warn { color: var(--warn); }
+    .footer { margin-top: 10px; color: var(--muted); font-size: 12px; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧭 DeleteTrip Filter (Client-side)</h1>
+    <div class="sub">
+      Keeps only <code>["Reference Number","Trip Number","Trip Status"]</code>, removes rows where
+      <code>Trip Status == "completed"</code> (case‑sensitive), and keeps rows with empty/null
+      <code>Reference Number</code>. Preview shows top 25 rows only.
+    </div>
+
+    <div class="row">
+      <input id="url" type="text" placeholder="Paste a direct CSV URL (must allow CORS) …" />
+      <button id="btnLoadUrl" class="btn">Load from URL</button>
+      <input id="file" type="file" accept=".csv" class="hidden" />
+      <button id="btnPick" class="btn secondary">Choose File…</button>
+      <button id="btnProcess" class="btn" disabled>Process</button>
+      <button id="btnDownload" class="btn secondary" disabled>Download CSV</button>
+    </div>
+
+    <div id="drop" class="drop">
+      <div style="margin-bottom:8px;">📂 <b>Drag & drop</b> a CSV here</div>
+      <div class="chip">Nothing is uploaded. Parsing & filtering happens entirely in your browser.</div>
+    </div>
+
+    <div id="status" class="status">Ready</div>
+
+    <div id="grid" class="grid hidden">
+      <table>
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      Tip: If the CSV has unusual delimiters/encodings, this app still parses it locally using Papa Parse.
+    </div>
+  </div>
+
+  <!-- Papa Parse (client-side CSV parser). If you need fully offline, download this file and reference locally. -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <script>
+    // --- App state ---
+    let rawCsvText = null;        // CSV as text (from file or fetch)
+    let parsed = null;            // Full parse result (object)
+    let filteredRows = null;      // Filtered rows (array of objects)
+    const REQUIRED = ["Reference Number", "Trip Number", "Trip Status"];
+
+    // --- DOM helpers ---
+    const $ = (sel) => document.querySelector(sel);
+    const statusEl = $("#status");
+    const gridEl = $("#grid");
+    const theadEl = $("#thead");
+    const tbodyEl = $("#tbody");
+    const urlEl = $("#url");
+    const btnPick = $("#btnPick");
+    const fileEl = $("#file");
+    const btnLoadUrl = $("#btnLoadUrl");
+    const btnProcess = $("#btnProcess");
+    const btnDownload = $("#btnDownload");
+    const dropEl = $("#drop");
+
+    function setStatus(msg, cls="") {
+      statusEl.className = "status " + (cls || "");
+      statusEl.textContent = msg;
+    }
+
+    function normalizeHeader(name) {
+      if (name == null) return "";
+      return String(name).replace(/\u00a0/g, " ").trim().replace(/\s+/g, " ").toLowerCase();
+    }
+
+    function resolveColumns(headers) {
+      const map = {};
+      headers.forEach(h => map[normalizeHeader(h)] = h);
+
+      function find(label) {
+        const key = normalizeHeader(label);
+        if (map[key]) return map[key];
+        // also try compacted
+        const compact = key.replace(/\s+/g, "");
+        for (const nk in map) {
+          if (nk.replace(/\s+/g,"") === compact) return map[nk];
+        }
+        throw new Error(label);
+      }
+
+      return {
+        ref: find("Reference Number"),
+        trip: find("Trip Number"),
+        status: find("Trip Status")
+      };
+    }
+
+    async function parseCsvText(text) {
+      return new Promise((resolve) => {
+        Papa.parse(text, {
+          header: true,
+          skipEmptyLines: "greedy",
+          worker: true,          // parse in a web worker (UI stays responsive)
+          dynamicTyping: false,
+          complete: results => resolve(results)
+        });
+      });
+    }
+
+    function processData(parsedResult) {
+      if (!parsedResult || !parsedResult.meta || !parsedResult.meta.fields) {
+        throw new Error("Could not read headers from CSV.");
+      }
+      const fields = parsedResult.meta.fields;                // original headers
+      const { ref, trip, status } = resolveColumns(fields);   // resolve to actual header text in this file
+
+      // Keep only required columns; apply filters:
+      // 1) Trip Status != 'completed' (exact, case-sensitive)
+      // 2) Reference Number is null/empty (after trimming)
+      const out = [];
+      for (const row of parsedResult.data) {
+        const tStatus = (row[status] ?? "");
+        if (tStatus === "completed") continue; // drop
+        const refVal = row[ref];
+        const isEmpty = refVal == null || String(refVal).trim() === "";
+        if (!isEmpty) continue;
+        out.push({
+          "Reference Number": refVal ?? "",
+          "Trip Number": row[trip] ?? "",
+          "Trip Status": tStatus ?? ""
+        });
+      }
+      return out;
+    }
+
+    function renderPreview(rows) {
+      // Show at most 25 rows
+      const preview = rows.slice(0, 25);
+      // Table header (fixed to the 3 kept columns)
+      theadEl.innerHTML = `
+        <tr>
+          <th>Reference Number</th>
+          <th>Trip Number</th>
+          <th>Trip Status</th>
+        </tr>`;
+      // Table body
+      tbodyEl.innerHTML = preview.map(r => `
+        <tr>
+          <td>${escapeHtml(r["Reference Number"])}</td>
+          <td>${escapeHtml(r["Trip Number"])}</td>
+          <td>${escapeHtml(r["Trip Status"])}</td>
+        </tr>
+      `).join("");
+      gridEl.classList.toggle("hidden", preview.length === 0);
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;");
+    }
+
+    function toCsv(rows) {
+      // Use Papa to unparse, ensuring standards-compliant CSV quoting
+      return Papa.unparse(rows, { columns: ["Reference Number","Trip Number","Trip Status"] });
+    }
+
+    function downloadCsv(filename, text) {
+      const blob = new Blob([text], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // --- Event wiring ---
+    btnPick.addEventListener("click", () => fileEl.click());
+    fileEl.addEventListener("change", async e => {
+      if (!e.target.files || !e.target.files[0]) return;
+      const file = e.target.files[0];
+      await readLocalFile(file);
+    });
+
+    btnLoadUrl.addEventListener("click", async () => {
+      const url = urlEl.value.trim();
+      if (!url) return setStatus("Please paste a direct CSV URL.", "warn");
+      try {
+        setStatus("Downloading CSV from URL…");
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        const text = await res.text();
+        rawCsvText = text;
+        parsed = await parseCsvText(text);
+        setStatus(`Loaded from URL. Rows: ${parsed.data.length.toLocaleString()}, Cols: ${parsed.meta.fields.length}`);
+        btnProcess.disabled = false;
+      } catch (err) {
+        setStatus("Could not load CSV from URL. " + err, "error");
+        btnProcess.disabled = true;
+      }
+    });
+
+    async function readLocalFile(file) {
+      setStatus(`Reading file: ${file.name} …`);
+      rawCsvText = await file.text();           // stays on device; no upload
+      parsed = await parseCsvText(rawCsvText);
+      setStatus(`Loaded ${file.name}. Rows: ${parsed.data.length.toLocaleString()}, Cols: ${parsed.meta.fields.length}`);
+      btnProcess.disabled = false;
+    }
+
+    // Drag & drop handlers
+    ["dragenter","dragover"].forEach(evt =>
+      dropEl.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); dropEl.classList.add("dragover"); })
+    );
+    ["dragleave","drop"].forEach(evt =>
+      dropEl.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); dropEl.classList.remove("dragover"); })
+    );
+    dropEl.addEventListener("drop", async e => {
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!file) return;
+      if (!file.name.toLowerCase().endsWith(".csv")) {
+        setStatus("Please drop a .csv file.", "warn");
+        return;
+      }
+      await readLocalFile(file);
+    });
+
+    btnProcess.addEventListener("click", () => {
+      try {
+        if (!parsed) return setStatus("Load a CSV first.", "warn");
+        setStatus("Processing…");
+        filteredRows = processData(parsed);
+        renderPreview(filteredRows);
+        setStatus(`Processed. Rows after filters: ${filteredRows.length.toLocaleString()} (showing first 25)`, "success");
+        btnDownload.disabled = filteredRows.length === 0;
+      } catch (err) {
+        setStatus(`Processing error: ${err.message || err}`, "error");
+        btnDownload.disabled = true;
+      }
+    });
+
+    btnDownload.addEventListener("click", () => {
+      if (!filteredRows || filteredRows.length === 0) return;
+      const csv = toCsv(filteredRows);
+      downloadCsv("DeleteTrip.csv", csv);
+    });
+
+    // Init
+    setStatus("Ready. Load a CSV via drag & drop, Choose File, or URL.");
+
+  </script>
+</body>
+</html>
