@@ -1,302 +1,737 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>DeleteTrip Filter (Client-side)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root {
-      --bg: #0f1115; --fg: #e8eaed; --muted: #a1a7b3; --accent: #3b82f6; --ok:#10b981; --warn:#f59e0b; --err:#ef4444;
-      --border: #2a2f3a; --chip:#1b1f2a;
-    }
-    html, body { height: 100%; }
-    body {
-      margin: 0; font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif;
-      background: var(--bg); color: var(--fg);
-      display: flex; align-items: stretch; justify-content: center;
-    }
-    .container { width: min(1100px, 100%); padding: 24px; }
-    h1 { margin: 0 0 12px; font-size: 20px; }
-    .sub { color: var(--muted); margin-bottom: 18px; font-size: 13px; }
-    .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
-    input[type="text"] {
-      flex: 1 1 520px; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: #111521; color: var(--fg);
-    }
-    .btn {
-      background: var(--accent); border: none; color: white; padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 600;
-    }
-    .btn:disabled { opacity: .6; cursor: not-allowed; }
-    .btn.secondary { background: #374151; }
-    .chip { display:inline-flex; align-items:center; gap:8px; background:var(--chip); border:1px solid var(--border); padding:8px 10px; border-radius: 999px; color: var(--muted); }
-    .drop {
-      border: 2px dashed var(--border); border-radius: 12px; padding: 24px; text-align: center; margin: 10px 0 16px; background: #0b0e18;
-    }
-    .drop.dragover { border-color: var(--accent); background: #101426; }
-    .grid {
-      overflow:auto; border:1px solid var(--border); border-radius: 10px; background:#0b0f1a;
-    }
-    table { border-collapse: collapse; width: 100%; font-size: 13px; }
-    th, td { padding: 8px 10px; border-bottom: 1px solid #151a26; white-space: nowrap; }
-    th { position: sticky; top: 0; background:#0f1320; text-align: left; }
-    .status { margin: 8px 0 2px; font-size: 12px; color: var(--muted); }
-    .error { color: var(--err); }
-    .success { color: var(--ok); }
-    .warn { color: var(--warn); }
-    .footer { margin-top: 10px; color: var(--muted); font-size: 12px; }
-    .hidden { display: none !important; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini CLI Setup Guide - Windows</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000000;
+            color: #ffffff;
+            font-family: 'Source Code Pro', monospace;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            color: #888888;
+            margin-bottom: 60px;
+            font-weight: 300;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 50px 0 20px 0;
+            color: #ffffff;
+            border-bottom: 1px solid #333333;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 30px 0 15px 0;
+            color: #cccccc;
+        }
+
+        p {
+            margin-bottom: 15px;
+            color: #cccccc;
+            font-weight: 300;
+        }
+
+        .step {
+            margin-bottom: 40px;
+        }
+
+        .step-number {
+            display: inline-block;
+            background: #ffffff;
+            color: #000000;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-weight: 600;
+        }
+
+        code {
+            background: #1a1a1a;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.9em;
+            color: #ffffff;
+            border: 1px solid #333333;
+        }
+
+        pre {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 15px 0;
+            border: 1px solid #333333;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            border: none;
+            font-size: 0.85em;
+            display: block;
+        }
+
+        .note {
+            background: #1a1a1a;
+            border-left: 3px solid #666666;
+            padding: 15px 20px;
+            margin: 20px 0;
+        }
+
+        .note-title {
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        ul {
+            margin: 15px 0 15px 40px;
+            color: #cccccc;
+        }
+
+        li {
+            margin-bottom: 8px;
+            font-weight: 300;
+        }
+
+        a {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        a:hover {
+            color: #cccccc;
+        }
+
+        .section {
+            margin-bottom: 60px;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🧭 DeleteTrip Filter (Client-side)</h1>
-    <div class="sub">
-      Keeps only <code>["Reference Number","Trip Number","Trip Status"]</code>, removes rows where
-      <code>Trip Status == "completed"</code> (case‑sensitive), and keeps rows with empty/null
-      <code>Reference Number</code>. Preview shows top 25 rows only.
+    <div class="container">
+        <h1>Gemini CLI Setup Guide</h1>
+        <p class="subtitle">Complete installation and MCP configuration for Windows</p>
+
+        <!-- Agentic AI Section -->
+        <div class="section">
+            <h2>Understanding Agentic AI</h2>
+            
+            <h3>What is Agentic AI?</h3>
+            <p>Agentic AI refers to artificial intelligence systems that can autonomously perform tasks, make decisions, and take actions on behalf of users. Unlike traditional AI that simply responds to prompts, agentic AI can:</p>
+            <ul>
+                <li>Plan and execute multi-step workflows</li>
+                <li>Use tools and APIs to interact with external systems</li>
+                <li>Make decisions based on context and goals</li>
+                <li>Adapt to changing conditions in real-time</li>
+                <li>Learn from feedback and improve over time</li>
+            </ul>
+
+            <h3>The Goal of Agentic AI</h3>
+            <p>The primary goal is to automate complex workflows and augment human capabilities by:</p>
+            <ul>
+                <li><strong>Reducing repetitive tasks:</strong> Automating routine work that consumes valuable time</li>
+                <li><strong>Enhancing productivity:</strong> Allowing humans to focus on strategic, creative work</li>
+                <li><strong>Improving accuracy:</strong> Minimizing human error in data-heavy tasks</li>
+                <li><strong>Enabling scalability:</strong> Handling multiple tasks simultaneously without fatigue</li>
+                <li><strong>Bridging systems:</strong> Connecting different tools and platforms seamlessly</li>
+            </ul>
+
+            <h3>Day-to-Day Office Applications</h3>
+            <p>Agentic AI can transform your daily work routine:</p>
+            
+            <div class="note">
+                <div class="note-title">Project Management</div>
+                <p>Automatically update task boards, schedule meetings based on availability, send status updates, and track project milestones across multiple platforms.</p>
+            </div>
+
+            <div class="note">
+                <div class="note-title">Email & Communication</div>
+                <p>Draft responses, categorize messages, schedule follow-ups, extract action items, and maintain communication templates.</p>
+            </div>
+
+            <div class="note">
+                <div class="note-title">Data Analysis</div>
+                <p>Pull data from multiple sources, generate reports, create visualizations, identify trends, and provide actionable insights.</p>
+            </div>
+
+            <div class="note">
+                <div class="note-title">Content Creation</div>
+                <p>Generate marketing materials, write documentation, create presentations, design graphics, and maintain brand consistency.</p>
+            </div>
+
+            <div class="note">
+                <div class="note-title">Research & Intelligence</div>
+                <p>Gather market data, monitor competitors, track industry trends, summarize documents, and curate relevant information.</p>
+            </div>
+
+            <h3>Why Learn Agentic AI?</h3>
+            <ul>
+                <li><strong>Career Advancement:</strong> AI proficiency is becoming essential across industries</li>
+                <li><strong>Competitive Edge:</strong> Early adopters gain significant productivity advantages</li>
+                <li><strong>Future-Proofing:</strong> Understanding AI prepares you for the evolving workplace</li>
+                <li><strong>Innovation Catalyst:</strong> Enables you to create novel solutions to business problems</li>
+                <li><strong>Cost Efficiency:</strong> Automate expensive processes and reduce operational overhead</li>
+                <li><strong>Scalable Impact:</strong> Multiply your output without proportional time investment</li>
+            </ul>
+
+            <h3>Enterprise Use Cases</h3>
+            
+            <p><strong>Sales & Marketing:</strong></p>
+            <ul>
+                <li>Lead qualification and nurturing campaigns</li>
+                <li>Personalized email outreach at scale</li>
+                <li>Social media content scheduling and monitoring</li>
+                <li>Competitive analysis and market research</li>
+                <li>Campaign performance tracking and optimization</li>
+            </ul>
+
+            <p><strong>Operations & Procurement:</strong></p>
+            <ul>
+                <li>Vendor research and comparison</li>
+                <li>Purchase order generation and tracking</li>
+                <li>Inventory monitoring and reordering</li>
+                <li>Contract analysis and compliance checking</li>
+                <li>Supply chain optimization</li>
+            </ul>
+
+            <p><strong>Human Resources:</strong></p>
+            <ul>
+                <li>Resume screening and candidate matching</li>
+                <li>Interview scheduling and coordination</li>
+                <li>Onboarding workflow automation</li>
+                <li>Employee data management</li>
+                <li>Performance review compilation</li>
+            </ul>
+
+            <p><strong>Customer Service:</strong></p>
+            <ul>
+                <li>Ticket triage and routing</li>
+                <li>Knowledge base maintenance</li>
+                <li>Customer sentiment analysis</li>
+                <li>Response template generation</li>
+                <li>Escalation management</li>
+            </ul>
+
+            <p><strong>Finance & Accounting:</strong></p>
+            <ul>
+                <li>Invoice processing and reconciliation</li>
+                <li>Expense report validation</li>
+                <li>Financial data aggregation</li>
+                <li>Budget tracking and alerts</li>
+                <li>Compliance documentation</li>
+            </ul>
+        </div>
+
+        <!-- Prerequisites Section -->
+        <div class="section">
+            <h2>Prerequisites</h2>
+            <ul>
+                <li>Windows 10 or later</li>
+                <li>Node.js 18.0.0 or higher</li>
+                <li>npm (comes with Node.js)</li>
+                <li>Google AI Studio API key</li>
+            </ul>
+        </div>
+
+        <!-- Installation Section -->
+        <div class="section">
+            <h2>Installation</h2>
+
+            <div class="step">
+                <h3><span class="step-number">1</span>Install Node.js</h3>
+                <p>Download and install Node.js from the official website:</p>
+                <pre><code>https://nodejs.org/</code></pre>
+                <p>Verify installation by opening Command Prompt or PowerShell:</p>
+                <pre><code>node --version
+npm --version</code></pre>
+            </div>
+
+            <div class="step">
+                <h3><span class="step-number">2</span>Install Gemini CLI</h3>
+                <p>Open PowerShell or Command Prompt as Administrator and run:</p>
+                <pre><code>npm install -g @google/generative-ai-cli</code></pre>
+                <p>Verify installation:</p>
+                <pre><code>gemini --version</code></pre>
+            </div>
+
+            <div class="step">
+                <h3><span class="step-number">3</span>Get Your API Key</h3>
+                <p>Visit Google AI Studio to generate your API key:</p>
+                <pre><code>https://makersuite.google.com/app/apikey</code></pre>
+                <div class="note">
+                    <div class="note-title">Note</div>
+                    <p>Keep your API key secure and never share it publicly.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <h3><span class="step-number">4</span>Configure API Key</h3>
+                <p>Set your API key as an environment variable:</p>
+                <p><strong>PowerShell:</strong></p>
+                <pre><code>$env:GOOGLE_API_KEY="your-api-key-here"</code></pre>
+                <p><strong>Command Prompt:</strong></p>
+                <pre><code>set GOOGLE_API_KEY=your-api-key-here</code></pre>
+                <p><strong>Permanent (System Environment Variable):</strong></p>
+                <ul>
+                    <li>Open System Properties → Advanced → Environment Variables</li>
+                    <li>Click "New" under User variables</li>
+                    <li>Variable name: <code>GOOGLE_API_KEY</code></li>
+                    <li>Variable value: your API key</li>
+                    <li>Click OK and restart your terminal</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- MCP Setup Section -->
+        <div class="section">
+            <h2>MCP (Model Context Protocol) Setup</h2>
+
+            <div class="step">
+                <h3><span class="step-number">1</span>Create MCP Configuration Directory</h3>
+                <p>Create a directory for MCP configuration:</p>
+                <pre><code>mkdir %USERPROFILE%\.gemini
+cd %USERPROFILE%\.gemini</code></pre>
+            </div>
+
+            <div class="step">
+                <h3><span class="step-number">2</span>Create MCP Config File</h3>
+                <p>Create a file named <code>mcp_config.json</code> in the <code>.gemini</code> directory:</p>
+                <pre><code>{
+  "mcpServers": {
+    "figma": {
+      "url": "https://mcp.figma.com/mcp",
+      "apiKey": "YOUR_FIGMA_API_KEY"
+    },
+    "canva": {
+      "url": "https://mcp.canva.com/mcp",
+      "apiKey": "YOUR_CANVA_API_KEY"
+    },
+    "notion": {
+      "url": "https://mcp.notion.com/mcp",
+      "apiKey": "YOUR_NOTION_API_KEY"
+    }
+  }
+}</code></pre>
+            </div>
+
+            <div class="step">
+                <h3><span class="step-number">3</span>Configure Figma MCP</h3>
+                <p>Get your Figma API key:</p>
+                <ul>
+                    <li>Go to <a href="https://www.figma.com/developers/api" target="_blank">Figma API Settings</a></li>
+                    <li>Click "Generate new token"</li>
+                    <li>Copy the token</li>
+                    <li>Replace <code>YOUR_FIGMA_API_KEY</code> in the config file</li>
+                </ul>
+                <div class="note">
+                    <div class="note-title">Figma Permissions</div>
+                    <p>Ensure your Figma token has read access to the files you want to interact with.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <h3><span class="step-number">4</span>Configure Canva MCP</h3>
+                <p>Get your Canva API key:</p>
+                <ul>
+                    <li>Visit <a href="https://www.canva.com/developers" target="_blank">Canva Developers</a></li>
+                    <li>Create a new app or use an existing one</li>
+                    <li>Generate an API key</li>
+                    <li>Replace <code>YOUR_CANVA_API_KEY</code> in the config file</li>
+                </ul>
+                <div class="note">
+                    <div class="note-title">Canva Setup</div>
+                    <p>You may need to authenticate via OAuth for full access to Canva features.</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <h3><span class="step-number">5</span>Configure Notion MCP</h3>
+                <p>Get your Notion integration token:</p>
+                <ul>
+                    <li>Go to <a href="https://www.notion.so/my-integrations" target="_blank">Notion Integrations</a></li>
+                    <li>Click "New integration"</li>
+                    <li>Give it a name and select capabilities</li>
+                    <li>Copy the "Internal Integration Token"</li>
+                    <li>Replace <code>YOUR_NOTION_API_KEY</code> in the config file</li>
+                </ul>
+                <p><strong>Share pages with your integration:</strong></p>
+                <ul>
+                    <li>Open the Notion page you want to access</li>
+                    <li>Click "Share" → "Invite"</li>
+                    <li>Select your integration and grant access</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <h3><span class="step-number">6</span>Configure Chrome MCP</h3>
+                <p>Chrome MCP enables browser automation and web interaction capabilities.</p>
+                
+                <p><strong>Installation:</strong></p>
+                <pre><code>npm install -g @modelcontextprotocol/server-chrome</code></pre>
+                
+                <p><strong>Update your mcp_config.json:</strong></p>
+                <pre><code>{
+  "mcpServers": {
+    "figma": {
+      "url": "https://mcp.figma.com/mcp",
+      "apiKey": "YOUR_FIGMA_API_KEY"
+    },
+    "canva": {
+      "url": "https://mcp.canva.com/mcp",
+      "apiKey": "YOUR_CANVA_API_KEY"
+    },
+    "notion": {
+      "url": "https://mcp.notion.com/mcp",
+      "apiKey": "YOUR_NOTION_API_KEY"
+    },
+    "chrome": {
+      "command": "mcp-server-chrome",
+      "args": ["--headless"]
+    }
+  }
+}</code></pre>
+
+                <h3 style="margin-top: 30px;">Chrome MCP Use Cases</h3>
+                
+                <p><strong>Procurement & Vendor Research:</strong></p>
+                <ul>
+                    <li><strong>Automated Web Indexing:</strong> Crawl supplier websites to extract product catalogs, pricing, specifications, and availability</li>
+                    <li><strong>Price Monitoring:</strong> Track competitor pricing across multiple e-commerce platforms in real-time</li>
+                    <li><strong>Vendor Discovery:</strong> Search and evaluate potential suppliers based on criteria like location, certifications, and reviews</li>
+                    <li><strong>Compliance Checking:</strong> Verify vendor certifications, safety data sheets, and regulatory compliance documentation</li>
+                    <li><strong>RFQ Automation:</strong> Fill out request-for-quote forms across multiple vendor portals automatically</li>
+                </ul>
+
+                <p><strong>Social Media Management:</strong></p>
+                <ul>
+                    <li><strong>Content Publishing:</strong> Post updates across LinkedIn, Twitter, Facebook simultaneously with platform-specific formatting</li>
+                    <li><strong>Engagement Monitoring:</strong> Track mentions, comments, and engagement metrics across platforms</li>
+                    <li><strong>Competitor Analysis:</strong> Monitor competitor social media activity, posting frequency, and audience engagement</li>
+                    <li><strong>Hashtag Research:</strong> Identify trending hashtags relevant to your industry</li>
+                    <li><strong>Influencer Discovery:</strong> Find and evaluate potential brand ambassadors based on reach and engagement</li>
+                </ul>
+
+                <p><strong>Event-Driven Marketing:</strong></p>
+                <ul>
+                    <li><strong>Real-Time Event Monitoring:</strong> Track breaking news, industry events, conferences, and trending topics</li>
+                    <li><strong>Dynamic Content Generation:</strong> Create marketing materials that reference current events (e.g., "Join us at [Conference Name]")</li>
+                    <li><strong>Newsjacking:</strong> Identify relevant trending topics and quickly create timely content</li>
+                    <li><strong>Event-Based Campaigns:</strong> Automatically launch campaigns tied to holidays, product launches, or industry milestones</li>
+                    <li><strong>Sentiment Analysis:</strong> Monitor public reaction to events affecting your industry or brand</li>
+                </ul>
+
+                <p><strong>Market Intelligence:</strong></p>
+                <ul>
+                    <li><strong>Job Posting Analysis:</strong> Track competitor hiring trends to understand their strategic direction</li>
+                    <li><strong>News Aggregation:</strong> Compile industry news from multiple sources into digestible summaries</li>
+                    <li><strong>Patent Monitoring:</strong> Track new patent filings in your industry</li>
+                    <li><strong>Regulatory Updates:</strong> Monitor government and regulatory websites for policy changes</li>
+                    <li><strong>Customer Reviews:</strong> Aggregate and analyze customer feedback across review platforms</li>
+                </ul>
+
+                <p><strong>Lead Generation:</strong></p>
+                <ul>
+                    <li><strong>Contact Extraction:</strong> Gather prospect information from company websites and directories</li>
+                    <li><strong>Email Verification:</strong> Validate email addresses through web-based tools</li>
+                    <li><strong>Company Research:</strong> Build detailed profiles of target accounts</li>
+                    <li><strong>Technology Detection:</strong> Identify what technologies companies are using (CRM, marketing tools, etc.)</li>
+                    <li><strong>Funding Tracking:</strong> Monitor startup funding announcements and investment activity</li>
+                </ul>
+
+                <div class="note" style="margin-top: 20px;">
+                    <div class="note-title">Example: Procurement Workflow</div>
+                    <p>Using Gemini + Chrome MCP for procurement:</p>
+                    <pre><code>// Example conversation with Gemini
+"Search for industrial safety gloves suppliers in the EU 
+that meet EN 388 standards. Compare prices for 1000 units, 
+extract lead times, and create a comparison table in 
+my procurement spreadsheet."
+
+// Gemini will:
+1. Use Chrome to search relevant supplier websites
+2. Extract product specifications and pricing
+3. Verify certifications
+4. Compile data into structured format
+5. Update your tracking spreadsheet</code></pre>
+                </div>
+
+                <div class="note" style="margin-top: 20px;">
+                    <div class="note-title">Example: Event-Based Marketing</div>
+                    <p>Real-time marketing campaign creation:</p>
+                    <pre><code>// Example conversation with Gemini
+"Monitor tech news for any AI regulation announcements. 
+When detected, create a LinkedIn post positioning our 
+compliance software, design a Canva graphic, and draft 
+an email campaign to our enterprise segment."
+
+// Gemini will:
+1. Use Chrome to monitor news sources
+2. Detect relevant regulatory announcements
+3. Generate timely marketing copy
+4. Create visual assets in Canva
+5. Prepare email campaign materials</code></pre>
+                </div>
+            </div>
+
+            <div class="step">
+                <h3><span class="step-number">7</span>Verify MCP Configuration</h3>
+                <p>Test your MCP setup by running:</p>
+                <pre><code>gemini --mcp-config=%USERPROFILE%\.gemini\mcp_config.json</code></pre>
+                <p>The CLI should load and recognize your configured MCP servers.</p>
+            </div>
+        </div>
+
+        <!-- Usage Section -->
+        <div class="section">
+            <h2>Basic Usage</h2>
+
+            <div class="step">
+                <h3>Start Gemini CLI</h3>
+                <pre><code>gemini</code></pre>
+            </div>
+
+            <div class="step">
+                <h3>Start with MCP Enabled</h3>
+                <pre><code>gemini --mcp-config=%USERPROFILE%\.gemini\mcp_config.json</code></pre>
+            </div>
+
+            <div class="step">
+                <h3>Example Commands</h3>
+                <p>Once in the CLI, you can interact with your MCP services:</p>
+                <pre><code>// Query Figma designs
+"Show me the latest designs from Figma"
+
+// Create Canva designs
+"Create a social media post in Canva"
+
+// Access Notion data
+"Get my tasks from Notion"</code></pre>
+            </div>
+        </div>
+
+        <!-- Practical Workflows Section -->
+        <div class="section">
+            <h2>Practical Workflows with Gemini + MCP</h2>
+
+            <div class="step">
+                <h3>Workflow 1: Automated Procurement Research</h3>
+                <p><strong>Scenario:</strong> You need to source 500 laptop chargers for your office.</p>
+                <pre><code>You: "Find suppliers for USB-C laptop chargers (65W) in the US. 
+Compare prices for 500 units, check inventory availability, 
+and create a comparison table in my Notion procurement database."
+
+Gemini will:
+1. Use Chrome MCP to search supplier websites
+2. Extract pricing and availability data
+3. Verify product specifications
+4. Create a structured comparison in Notion
+5. Flag the best options based on price and lead time</code></pre>
+            </div>
+
+            <div class="step">
+                <h3>Workflow 2: Event-Based Marketing Campaign</h3>
+                <p><strong>Scenario:</strong> Your competitor just announced a major product recall.</p>
+                <pre><code>You: "Monitor tech news for product recalls in our industry. 
+When found, create a LinkedIn post highlighting our quality standards, 
+design a comparison infographic in Canva, and update our content 
+calendar in Notion."
+
+Gemini will:
+1. Use Chrome to monitor industry news sources
+2. Detect relevant recall announcements
+3. Generate appropriate marketing messaging
+4. Create visual assets in Canva
+5. Schedule the campaign in your content calendar</code></pre>
+            </div>
+
+            <div class="step">
+                <h3>Workflow 3: Social Media Management</h3>
+                <p><strong>Scenario:</strong> You need to maintain consistent social presence across platforms.</p>
+                <pre><code>You: "Create a week's worth of social media posts about our new 
+product launch. Post to LinkedIn, Twitter, and Instagram. 
+Use our brand guidelines from Figma and track performance 
+metrics in Notion."
+
+Gemini will:
+1. Access brand colors and fonts from Figma
+2. Generate platform-specific content variations
+3. Create visual assets in Canva
+4. Use Chrome to publish across platforms
+5. Set up tracking dashboard in Notion</code></pre>
+            </div>
+
+            <div class="step">
+                <h3>Workflow 4: Competitive Intelligence</h3>
+                <p><strong>Scenario:</strong> You need to track competitor movements weekly.</p>
+                <pre><code>You: "Every Monday, check competitor websites for new products, 
+pricing changes, and job postings. Summarize findings in a 
+Notion report with screenshots and analysis."
+
+Gemini will:
+1. Use Chrome to visit competitor websites
+2. Detect changes since last check
+3. Capture screenshots of new products
+4. Analyze pricing strategies
+5. Generate weekly intelligence report in Notion</code></pre>
+            </div>
+
+            <div class="step">
+                <h3>Workflow 5: Design Asset Management</h3>
+                <p><strong>Scenario:</strong> You need to create marketing materials for an upcoming webinar.</p>
+                <pre><code>You: "Pull our logo and brand colors from Figma. Create a webinar 
+announcement graphic in Canva, a LinkedIn event banner, and 
+email header. Save all assets to our Notion media library."
+
+Gemini will:
+1. Extract brand assets from Figma
+2. Generate designs in Canva for each format
+3. Ensure brand consistency across all materials
+4. Organize and tag assets in Notion
+5. Provide download links for immediate use</code></pre>
+            </div>
+
+            <div class="step">
+                <h3>Workflow 6: Market Research & Reporting</h3>
+                <p><strong>Scenario:</strong> You need a weekly market trends report.</p>
+                <pre><code>You: "Research current trends in AI automation tools. 
+Check pricing of top 5 competitors, read latest analyst reports, 
+and create a executive summary in Notion with charts in Canva."
+
+Gemini will:
+1. Use Chrome to gather market data
+2. Extract pricing from competitor websites
+3. Summarize analyst reports and news
+4. Create data visualizations in Canva
+5. Compile professional report in Notion</code></pre>
+            </div>
+
+            <div class="step">
+                <h3>Workflow 7: Content Repurposing</h3>
+                <p><strong>Scenario:</strong> Turn a blog post into multi-format content.</p>
+                <pre><code>You: "Take our latest blog post from Notion and create: 
+- 5 LinkedIn posts with graphics from Canva
+- 10 Twitter threads
+- Instagram carousel design in Canva
+- Email newsletter version
+Schedule everything for next week."
+
+Gemini will:
+1. Extract content from Notion blog post
+2. Adapt messaging for each platform
+3. Create platform-specific visuals in Canva
+4. Generate distribution schedule
+5. Prepare all assets for publishing</code></pre>
+            </div>
+
+            <div class="step">
+                <h3>Workflow 8: Real-Time Event Response</h3>
+                <p><strong>Scenario:</strong> Your industry has a major breaking news event.</p>
+                <pre><code>You: "Monitor news for [industry topic]. When significant news 
+breaks, immediately draft a thought leadership post, create 
+supporting graphics in Canva, and prepare a response email 
+to our customer base. Save everything to Notion for approval."
+
+Gemini will:
+1. Use Chrome to monitor news sources in real-time
+2. Detect breaking news relevant to your business
+3. Generate timely thought leadership content
+4. Create professional graphics
+5. Queue materials for review in Notion</code></pre>
+            </div>
+
+            <div class="note" style="margin-top: 30px;">
+                <div class="note-title">Pro Tips for Effective Workflows</div>
+                <ul>
+                    <li><strong>Be Specific:</strong> Provide clear instructions about formats, quantities, and desired outcomes</li>
+                    <li><strong>Set Boundaries:</strong> Define quality standards, brand guidelines, and approval processes</li>
+                    <li><strong>Iterate:</strong> Start with simple workflows and gradually add complexity</li>
+                    <li><strong>Monitor Results:</strong> Review outputs initially to ensure accuracy and quality</li>
+                    <li><strong>Create Templates:</strong> Save successful workflows as templates in Notion for reuse</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Troubleshooting Section -->
+        <div class="section">
+            <h2>Troubleshooting</h2>
+
+            <div class="step">
+                <h3>Command Not Found</h3>
+                <p>If <code>gemini</code> command is not recognized:</p>
+                <ul>
+                    <li>Restart your terminal</li>
+                    <li>Verify npm global bin path is in your PATH</li>
+                    <li>Run: <code>npm config get prefix</code> and ensure it's in your system PATH</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <h3>API Key Issues</h3>
+                <p>If API authentication fails:</p>
+                <ul>
+                    <li>Verify your API key is correct</li>
+                    <li>Check environment variable is set: <code>echo %GOOGLE_API_KEY%</code></li>
+                    <li>Ensure no extra spaces or quotes in the key</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <h3>MCP Connection Issues</h3>
+                <p>If MCP servers fail to connect:</p>
+                <ul>
+                    <li>Verify JSON syntax in <code>mcp_config.json</code></li>
+                    <li>Check API keys for each service are valid</li>
+                    <li>Ensure you have granted necessary permissions in each service</li>
+                    <li>Check internet connection and firewall settings</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="note" style="margin-top: 60px;">
+            <div class="note-title">Additional Resources</div>
+            <p>For more information, visit:</p>
+            <ul>
+                <li><a href="https://ai.google.dev/docs" target="_blank">Google AI Documentation</a></li>
+                <li><a href="https://github.com/google/generative-ai-js" target="_blank">Gemini API GitHub</a></li>
+                <li><a href="https://modelcontextprotocol.io/" target="_blank">Model Context Protocol</a></li>
+            </ul>
+        </div>
     </div>
-
-    <div class="row">
-      <input id="url" type="text" placeholder="Paste a direct CSV URL (must allow CORS) …" />
-      <button id="btnLoadUrl" class="btn">Load from URL</button>
-      <input id="file" type="file" accept=".csv" class="hidden" />
-      <button id="btnPick" class="btn secondary">Choose File…</button>
-      <button id="btnProcess" class="btn" disabled>Process</button>
-      <button id="btnDownload" class="btn secondary" disabled>Download CSV</button>
-    </div>
-
-    <div id="drop" class="drop">
-      <div style="margin-bottom:8px;">📂 <b>Drag & drop</b> a CSV here</div>
-      <div class="chip">Nothing is uploaded. Parsing & filtering happens entirely in your browser.</div>
-    </div>
-
-    <div id="status" class="status">Ready</div>
-
-    <div id="grid" class="grid hidden">
-      <table>
-        <thead id="thead"></thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
-
-    <div class="footer">
-      Tip: If the CSV has unusual delimiters/encodings, this app still parses it locally using Papa Parse.
-    </div>
-  </div>
-
-  <!-- Papa Parse (client-side CSV parser). If you need fully offline, download this file and reference locally. -->
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-
-  <script>
-    // --- App state ---
-    let rawCsvText = null;        // CSV as text (from file or fetch)
-    let parsed = null;            // Full parse result (object)
-    let filteredRows = null;      // Filtered rows (array of objects)
-    const REQUIRED = ["Reference Number", "Trip Number", "Trip Status"];
-
-    // --- DOM helpers ---
-    const $ = (sel) => document.querySelector(sel);
-    const statusEl = $("#status");
-    const gridEl = $("#grid");
-    const theadEl = $("#thead");
-    const tbodyEl = $("#tbody");
-    const urlEl = $("#url");
-    const btnPick = $("#btnPick");
-    const fileEl = $("#file");
-    const btnLoadUrl = $("#btnLoadUrl");
-    const btnProcess = $("#btnProcess");
-    const btnDownload = $("#btnDownload");
-    const dropEl = $("#drop");
-
-    function setStatus(msg, cls="") {
-      statusEl.className = "status " + (cls || "");
-      statusEl.textContent = msg;
-    }
-
-    function normalizeHeader(name) {
-      if (name == null) return "";
-      return String(name).replace(/\u00a0/g, " ").trim().replace(/\s+/g, " ").toLowerCase();
-    }
-
-    function resolveColumns(headers) {
-      const map = {};
-      headers.forEach(h => map[normalizeHeader(h)] = h);
-
-      function find(label) {
-        const key = normalizeHeader(label);
-        if (map[key]) return map[key];
-        // also try compacted
-        const compact = key.replace(/\s+/g, "");
-        for (const nk in map) {
-          if (nk.replace(/\s+/g,"") === compact) return map[nk];
-        }
-        throw new Error(label);
-      }
-
-      return {
-        ref: find("Reference Number"),
-        trip: find("Trip Number"),
-        status: find("Trip Status")
-      };
-    }
-
-    async function parseCsvText(text) {
-      return new Promise((resolve) => {
-        Papa.parse(text, {
-          header: true,
-          skipEmptyLines: "greedy",
-          worker: true,          // parse in a web worker (UI stays responsive)
-          dynamicTyping: false,
-          complete: results => resolve(results)
-        });
-      });
-    }
-
-    function processData(parsedResult) {
-      if (!parsedResult || !parsedResult.meta || !parsedResult.meta.fields) {
-        throw new Error("Could not read headers from CSV.");
-      }
-      const fields = parsedResult.meta.fields;                // original headers
-      const { ref, trip, status } = resolveColumns(fields);   // resolve to actual header text in this file
-
-      // Keep only required columns; apply filters:
-      // 1) Trip Status != 'completed' (exact, case-sensitive)
-      // 2) Reference Number is null/empty (after trimming)
-      const out = [];
-      for (const row of parsedResult.data) {
-        const tStatus = (row[status] ?? "");
-        if (tStatus === "completed") continue; // drop
-        const refVal = row[ref];
-        const isEmpty = refVal == null || String(refVal).trim() === "";
-        if (!isEmpty) continue;
-        out.push({
-          "Reference Number": refVal ?? "",
-          "Trip Number": row[trip] ?? "",
-          "Trip Status": tStatus ?? ""
-        });
-      }
-      return out;
-    }
-
-    function renderPreview(rows) {
-      // Show at most 25 rows
-      const preview = rows.slice(0, 25);
-      // Table header (fixed to the 3 kept columns)
-      theadEl.innerHTML = `
-        <tr>
-          <th>Reference Number</th>
-          <th>Trip Number</th>
-          <th>Trip Status</th>
-        </tr>`;
-      // Table body
-      tbodyEl.innerHTML = preview.map(r => `
-        <tr>
-          <td>${escapeHtml(r["Reference Number"])}</td>
-          <td>${escapeHtml(r["Trip Number"])}</td>
-          <td>${escapeHtml(r["Trip Status"])}</td>
-        </tr>
-      `).join("");
-      gridEl.classList.toggle("hidden", preview.length === 0);
-    }
-
-    function escapeHtml(s) {
-      return String(s)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;");
-    }
-
-    function toCsv(rows) {
-      // Use Papa to unparse, ensuring standards-compliant CSV quoting
-      return Papa.unparse(rows, { columns: ["Reference Number","Trip Number","Trip Status"] });
-    }
-
-    function downloadCsv(filename, text) {
-      const blob = new Blob([text], { type: "text/csv;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
-
-    // --- Event wiring ---
-    btnPick.addEventListener("click", () => fileEl.click());
-    fileEl.addEventListener("change", async e => {
-      if (!e.target.files || !e.target.files[0]) return;
-      const file = e.target.files[0];
-      await readLocalFile(file);
-    });
-
-    btnLoadUrl.addEventListener("click", async () => {
-      const url = urlEl.value.trim();
-      if (!url) return setStatus("Please paste a direct CSV URL.", "warn");
-      try {
-        setStatus("Downloading CSV from URL…");
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-        const text = await res.text();
-        rawCsvText = text;
-        parsed = await parseCsvText(text);
-        setStatus(`Loaded from URL. Rows: ${parsed.data.length.toLocaleString()}, Cols: ${parsed.meta.fields.length}`);
-        btnProcess.disabled = false;
-      } catch (err) {
-        setStatus("Could not load CSV from URL. " + err, "error");
-        btnProcess.disabled = true;
-      }
-    });
-
-    async function readLocalFile(file) {
-      setStatus(`Reading file: ${file.name} …`);
-      rawCsvText = await file.text();           // stays on device; no upload
-      parsed = await parseCsvText(rawCsvText);
-      setStatus(`Loaded ${file.name}. Rows: ${parsed.data.length.toLocaleString()}, Cols: ${parsed.meta.fields.length}`);
-      btnProcess.disabled = false;
-    }
-
-    // Drag & drop handlers
-    ["dragenter","dragover"].forEach(evt =>
-      dropEl.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); dropEl.classList.add("dragover"); })
-    );
-    ["dragleave","drop"].forEach(evt =>
-      dropEl.addEventListener(evt, e => { e.preventDefault(); e.stopPropagation(); dropEl.classList.remove("dragover"); })
-    );
-    dropEl.addEventListener("drop", async e => {
-      const file = e.dataTransfer.files && e.dataTransfer.files[0];
-      if (!file) return;
-      if (!file.name.toLowerCase().endsWith(".csv")) {
-        setStatus("Please drop a .csv file.", "warn");
-        return;
-      }
-      await readLocalFile(file);
-    });
-
-    btnProcess.addEventListener("click", () => {
-      try {
-        if (!parsed) return setStatus("Load a CSV first.", "warn");
-        setStatus("Processing…");
-        filteredRows = processData(parsed);
-        renderPreview(filteredRows);
-        setStatus(`Processed. Rows after filters: ${filteredRows.length.toLocaleString()} (showing first 25)`, "success");
-        btnDownload.disabled = filteredRows.length === 0;
-      } catch (err) {
-        setStatus(`Processing error: ${err.message || err}`, "error");
-        btnDownload.disabled = true;
-      }
-    });
-
-    btnDownload.addEventListener("click", () => {
-      if (!filteredRows || filteredRows.length === 0) return;
-      const csv = toCsv(filteredRows);
-      downloadCsv("DeleteTrip.csv", csv);
-    });
-
-    // Init
-    setStatus("Ready. Load a CSV via drag & drop, Choose File, or URL.");
-
-  </script>
 </body>
 </html>
